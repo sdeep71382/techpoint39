@@ -2,13 +2,46 @@
 
 import { FormEvent, useState } from "react";
 import { Check, ChevronDown, LoaderCircle, Send, TriangleAlert } from "lucide-react";
-import { services } from "@/components/site-data";
+
+import type { Locale } from "@/i18n/config";
+import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
+import { services } from "@/i18n/services";
 
 type FormStatus = "idle" | "sending" | "success" | "error";
 
+type ContactFormProps = {
+  locale: Locale;
+};
+
 const MAX_MESSAGE = 1200;
 
-export default function ContactForm() {
+/**
+ * A bare asterisk is announced as "star" or skipped entirely, so the word is
+ * carried for assistive technology and the glyph is kept purely visual.
+ */
+function RequiredMark({ label }: { label: string }) {
+  return (
+    <>
+      <span className="text-alert" aria-hidden="true">
+        *
+      </span>
+      <span className="sr-only">{label}</span>
+    </>
+  );
+}
+
+/* Server error codes mapped to the matching line in each dictionary. */
+const errorKey: Record<string, keyof Dictionary["contact"]["errors"]> = {
+  missing_fields: "required",
+  invalid_email: "email",
+  too_long: "tooLong",
+  not_configured: "notConfigured",
+  invalid_body: "invalid",
+  send_failed: "invalid",
+};
+
+export default function ContactForm({ locale }: ContactFormProps) {
+  const dict = getDictionary(locale);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [feedback, setFeedback] = useState("");
   const [messageLength, setMessageLength] = useState(0);
@@ -27,26 +60,28 @@ export default function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as { error?: string; code?: string };
 
       if (!response.ok) {
-        throw new Error(result.error || "Could not send your message.");
+        const key = result.code ? errorKey[result.code] : undefined;
+        throw new Error(key ? dict.contact.errors[key] : result.error || dict.contact.errors.invalid);
       }
 
       form.reset();
       setMessageLength(0);
       setStatus("success");
-      setFeedback("Thanks. Your message has been sent, and we will get back to you soon.");
+      setFeedback(dict.contact.success);
     } catch (error) {
       setStatus("error");
       setFeedback(
-        error instanceof Error ? error.message : "Could not send your message. Please try again.",
+        error instanceof Error ? error.message : dict.contact.errors.invalid,
       );
     }
   }
 
   const isSending = status === "sending";
   const isError = status === "error";
+  const fields = dict.contact.fields;
 
   return (
     <form
@@ -55,7 +90,6 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       className="mt-6 grid gap-4"
       aria-busy={isSending}
-      noValidate={false}
     >
       <div className="contact-honeypot" aria-hidden="true">
         <label htmlFor="website">Website</label>
@@ -65,13 +99,15 @@ export default function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5">
           <span className="field-label">
-            Name <span className="text-alert">*</span>
+            {fields.name}{" "}
+            <RequiredMark label={dict.a11y.required} />
           </span>
-          <input name="name" type="text" autoComplete="name" required className="field" placeholder="Your name" />
+          <input name="name" type="text" autoComplete="name" required className="field" placeholder={fields.name} />
         </label>
         <label className="grid gap-1.5">
           <span className="field-label">
-            Email <span className="text-alert">*</span>
+            {fields.email}{" "}
+            <RequiredMark label={dict.a11y.required} />
           </span>
           <input
             name="email"
@@ -80,27 +116,37 @@ export default function ContactForm() {
             required
             className="field"
             placeholder="you@example.com"
+            dir="ltr"
           />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5">
-          <span className="field-label">Phone</span>
-          <input name="phone" type="tel" autoComplete="tel" className="field" placeholder="Your phone number" />
+          <span className="field-label">{fields.phone}</span>
+          <input
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            className="field"
+            placeholder={fields.phone}
+            dir="ltr"
+          />
         </label>
         {/*
-          The service list already existed in site-data, but this was a free-text
-          field, so most enquiries arrived without a usable service name.
+          The service list already existed in the data, but this was a free-text
+          field, so most enquiries arrived without a usable service name. The
+          option text is localised; the value stays the English name so the
+          inbox is readable and filterable whichever language was used.
         */}
         <label className="grid gap-1.5">
-          <span className="field-label">Service</span>
+          <span className="field-label">{fields.service}</span>
           <div className="select-wrap">
             <select name="service" className="field" defaultValue="">
-              <option value="">Not sure yet</option>
+              <option value="">{dict.contact.notSureYet}</option>
               {services.map((service) => (
-                <option key={service.id} value={service.title}>
-                  {service.title}
+                <option key={service.id} value={service.name.en}>
+                  {service.name[locale]}
                 </option>
               ))}
             </select>
@@ -112,7 +158,8 @@ export default function ContactForm() {
       <label className="grid gap-1.5">
         <span className="flex items-baseline justify-between gap-3">
           <span className="field-label">
-            Message <span className="text-alert">*</span>
+            {fields.message}{" "}
+            <RequiredMark label={dict.a11y.required} />
           </span>
           <span className="text-micro tabular-nums text-muted">
             {messageLength} / {MAX_MESSAGE}
@@ -124,7 +171,7 @@ export default function ContactForm() {
           rows={4}
           maxLength={MAX_MESSAGE}
           className="field resize-y"
-          placeholder="Tell us a little about your request"
+          placeholder={dict.contact.messagePlaceholder}
           onChange={(event) => setMessageLength(event.target.value.length)}
         />
       </label>
@@ -144,13 +191,11 @@ export default function ContactForm() {
         </p>
         <button type="submit" className="btn btn-primary btn-lg sm:w-auto" disabled={isSending}>
           {isSending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          {isSending ? "Sending..." : "Send message"}
+          {isSending ? dict.contact.sending : dict.contact.send}
         </button>
       </div>
 
-      <p className="text-micro leading-relaxed text-muted">
-        We use these details only to reply to your enquiry.
-      </p>
+      <p className="text-micro leading-relaxed text-muted">{dict.contact.privacy}</p>
     </form>
   );
 }

@@ -58,6 +58,21 @@
     text-wrap: balance;
   }
 
+  /*
+   * Space Grotesk has no Gurmukhi or Devanagari glyphs, so a Punjabi or Hindi
+   * heading would otherwise fall back to whatever the device happens to have
+   * and look nothing like the rest of the design. Pointing --font-display at
+   * the matching Noto family keeps those pages on-brand, and it costs nothing
+   * extra because all four faces are already loaded for the Latin scripts.
+   */
+  :root[data-locale="pa"] {
+    --font-display: var(--font-gurmukhi);
+  }
+
+  :root[data-locale="hi"] {
+    --font-display: var(--font-devanagari);
+  }
+
   ::selection {
     background: var(--signal);
     color: var(--navy-deep);

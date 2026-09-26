@@ -2,12 +2,47 @@
 
 ## Overview
 
-A responsive service-business website built with Next.js App Router, TypeScript, Tailwind CSS, and Lucide icons. The experience follows one useful customer journey: find a service, check starter documents, and contact support with a prepared request.
+A responsive service-business website built with Next.js App Router, TypeScript, Tailwind CSS, and Lucide icons. The experience follows one useful customer journey: find a service, check starter documents, and contact support with a prepared request. It is published in three languages — English (primary), Punjabi, and Hindi.
+
+## Languages
+
+The site is routed per language rather than switched client-side, so every version has a shareable URL, a correct server-rendered `<html lang>`, and its own metadata.
+
+| Locale | URL | Script typeface |
+| --- | --- | --- |
+| English | `/en` | Space Grotesk + Inter |
+| Punjabi | `/pa` | Noto Sans Gurmukhi |
+| Hindi | `/hi` | Noto Sans Devanagari |
+
+**How it works**
+
+- `src/app/[locale]/layout.tsx` is the root layout. It reads the locale segment, sets `lang`, `dir`, and `data-locale`, and generates static params for all three versions. The app root deliberately has no `layout.tsx` — a layout at the root cannot read a child segment's params, so `<html lang>` would be wrong for Punjabi and Hindi.
+- `src/proxy.ts` (Next.js 16's name for middleware) sends `/` and any path without a locale segment to the best match from the `Accept-Language` header, falling back to `/en`. `/api` is excluded so the contact endpoint is unaffected.
+- `globals.css` swaps `--font-display` per locale via `:root[data-locale="pa"]` and `:root[data-locale="hi"]`. All four font families are loaded once, so switching language never waits on the network.
+- `src/app/[locale]/[...rest]/page.tsx` catches unknown paths and raises `notFound()`, so a mistyped URL renders the localized 404 inside the locale layout instead of Next's bare error page.
+
+**Where the copy lives**
+
+- `src/i18n/dictionaries/en.ts` holds every UI string and defines the `Dictionary` type. The object is intentionally **not** `as const`, so `pa.ts` and `hi.ts` are type-checked against it: a missing key, an extra key, or a function with the wrong arity fails the build rather than rendering a blank.
+- `src/i18n/services.ts` models each service as `Localized` fields (`Record<Locale, string>` for name, description, and turnaround, `Record<Locale, string[]>` for documents).
+- `src/i18n/config.ts` holds the locale list, display names, `og:locale`, and the `stripLocale` / `localePath` path helpers.
+
+**How dictionaries reach components**
+
+The dictionaries contain formatting functions (`left(n)`, `resultCount(shown, total)`, the WhatsApp message builders), and React cannot serialise functions across the server/client boundary. Only the locale string is passed; each component calls `getDictionary(locale)` for itself. This also means no page is blocked on a per-language request — all three are bundled and every route is statically prerendered.
+
+**Deliberate exceptions to translation**
+
+- The wordmark, email address, and phone number stay in Latin script and are tagged `lang="en"`.
+- The contact form's `name` attributes stay English because the API and the inbox depend on them. The visible labels and the option text are localized; the service `<option>` value stays the English service name so submissions remain readable and filterable whichever language was used.
+- The API returns a machine-readable `code` alongside every English `error` string, and `contact-form.tsx` maps that code to the matching line in the active dictionary.
+- Each service card shows two secondary labels: Punjabi and Hindi on the English page, then the neighbouring language and English on the regional pages. A service stays identifiable for a reader who uses more than one script.
+
 
 ## Experience Direction
 
 - Brand palette is fixed: royal blue `#0857d6`, navy `#071f4f`, ink `#07101f`, signal yellow `#ffd21f`, alert red `#e11d2f`, white and off-white surfaces
-- Space Grotesk for display, Inter for interface and body, Noto Sans Gurmukhi and Noto Sans Devanagari for the bilingual service labels
+- Space Grotesk for display, Inter for interface and body, Noto Sans Gurmukhi and Noto Sans Devanagari as the display face on the Punjabi and Hindi pages
 - Real font weights only (400 / 500 / 600 / 700), so nothing is synthesised
 - One type scale in `tailwind.config.ts`, every size paired with a line height
 - Functional interactions instead of decorative motion
@@ -52,7 +87,7 @@ The checklist is guidance only. The interface states that exact requirements can
 
 ### Service Directory
 
-- Text search across service names, bilingual labels, categories, and descriptions
+- Text search across service names in all three languages, categories, and descriptions
 - Category filters with live result counts
 - Live result total and a one-click filter reset
 - Selected-service state visible on the matching card
@@ -70,7 +105,9 @@ The checklist is guidance only. The interface states that exact requirements can
 - Contextual call and WhatsApp actions throughout the page
 - Persistent call and WhatsApp bar below 768px
 - Progress meter exposed as `role="progressbar"` with `aria-valuenow`
-- Punjabi and Hindi labels tagged `lang="pa"` and `lang="hi"`
+- Language switcher in the header, repeated inline in the mobile menu and in the footer
+- Every language link is a real URL carrying `hrefLang` and `rel="alternate"`, matching the `alternates.languages` metadata
+- Required fields marked with a visible asterisk plus a screen-reader-only word, since a bare `*` announces as "star"
 - Reduced-motion support
 
 ## Main Sections
@@ -98,16 +135,25 @@ The checklist is guidance only. The interface states that exact requirements can
 - Printout, Photocopy and Scanning
 - Other Online Services
 
-Each service carries a Punjabi label, a Hindi label, a document checklist, and a rough turnaround used as guidance rather than a promise.
+Each service carries a name, description, turnaround, and document checklist in all three languages. The turnaround is guidance rather than a promise.
 
 ## Key Files
 
-- `src/app/page.tsx`: Page-level state and component composition
-- `src/components/site-data.ts`: Shared service content, categories, FAQs, and brand contact details
-- `src/components/service-local-label.tsx`: Renders the bilingual labels with the correct script, typeface, and language tag
+- `src/i18n/config.ts`: Locale list, display names, `og:locale`, and path helpers
+- `src/i18n/dictionaries/en.ts`: All UI copy in English, and the `Dictionary` type every other language must satisfy
+- `src/i18n/dictionaries/pa.ts`, `hi.ts`: Punjabi and Hindi translations
+- `src/i18n/dictionaries.ts`: `getDictionary(locale)`
+- `src/i18n/services.ts`: The ten services with per-locale content, plus brand contact details
+- `src/i18n/labels.ts`: Which scripts appear as secondary labels, and the matching typeface class
+- `src/app/[locale]/layout.tsx`: Root layout — fonts, `lang`/`dir`, static params, hreflang metadata
+- `src/app/[locale]/page.tsx`: Resolves the locale and hands off to the client page
+- `src/app/[locale]/not-found.tsx`: Localized 404 with links back to each language
+- `src/app/[locale]/[...rest]/page.tsx`: Routes unknown paths to the localized 404
+- `src/proxy.ts`: Locale negotiation and redirect
+- `src/components/home-page.tsx`: Page-level state and component composition
+- `src/components/service-local-label.tsx`: Renders secondary language labels with the correct script, typeface, and language tag
 - `src/components/`: Independent header, hero, request builder, service directory, content sections, contact, footer, and mobile action components
-- `src/app/globals.css`: Design tokens, base styles, and component classes
-- `src/app/layout.tsx`: Font loading, metadata, and root layout
+- `src/app/globals.css`: Design tokens, base styles, per-locale font swap, and component classes
 - `tailwind.config.ts`: Brand tokens, type scale, and Tailwind configuration
 - `public/techpoint-logo.jpeg`: Supplied logo asset
 - `public/techpoint-services-flyer.jpeg`: Original brand reference
@@ -120,7 +166,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. The root path redirects to the visitor's best-matching language, so `/en`, `/pa`, and `/hi` can also be opened directly.
 
 Production checks:
 
@@ -140,6 +186,14 @@ CONTACT_EMAIL=techpointservices39@gmail.com
 ```
 
 `FROM_EMAIL` must use a sender verified in Resend. The default, `onboarding@resend.dev`, only delivers to the Resend account owner. WhatsApp links are generated from the currently selected service and checklist state.
+
+## Open Items
+
+Decisions taken during the redesign that are still worth a second opinion:
+
+- **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). The old measure put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
+- **Logo weight** — `public/techpoint-logo.jpeg` is about 55 KB and renders at 52px in the header and 46px in the footer. A small PNG or SVG would cut roughly 50 KB from the critical path. The asset is a supplied file, so it was left untouched.
+- **Verified sender** — see Contact Configuration above; `FROM_EMAIL` needs a verified Resend sender before real enquiries will arrive.
 
 ## Disclaimer
 

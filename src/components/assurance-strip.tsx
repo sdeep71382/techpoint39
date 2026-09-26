@@ -1,6 +1,14 @@
-import { assurances } from "@/components/site-data";
+import { CheckCircle2, Headphones, ShieldCheck } from "lucide-react";
 
-export default function AssuranceStrip() {
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
+
+/* Fixed in the same order as the copy so the icons never shift between languages. */
+const icons = [ShieldCheck, CheckCircle2, Headphones];
+
+export default function AssuranceStrip({ locale }: { locale: Locale }) {
+  const dict = getDictionary(locale);
+
   return (
     <section className="border-y border-line bg-paper">
       {/*
@@ -9,8 +17,8 @@ export default function AssuranceStrip() {
         this actually is.
       */}
       <ul className="shell grid gap-y-2 py-2 md:grid-cols-3 md:gap-y-0">
-        {assurances.map((item, index) => {
-          const Icon = item.icon;
+        {dict.assurance.map((item, index) => {
+          const Icon = icons[index] ?? ShieldCheck;
           return (
             <li
               key={item.title}

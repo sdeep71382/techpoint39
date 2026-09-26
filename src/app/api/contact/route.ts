@@ -15,6 +15,15 @@ type ContactPayload = {
   website?: string;
 };
 
+/*
+ * A machine-readable code travels with every error so the three language
+ * versions can show a translated message. The English `error` string is kept
+ * as a fallback for anything that does not have a dictionary.
+ */
+function fail(code: string, error: string, status: number) {
+  return NextResponse.json({ code, error }, { status });
+}
+
 function isNonEmpty(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -35,14 +44,14 @@ export async function POST(request: NextRequest) {
   const fromEmail = process.env.FROM_EMAIL || defaultFromEmail;
 
   if (!resendKey) {
-    return NextResponse.json({ error: "Email service is not configured." }, { status: 503 });
+    return fail("not_configured", "Email service is not configured.", 503);
   }
 
   let payload: ContactPayload;
   try {
     payload = (await request.json()) as ContactPayload;
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return fail("invalid_body", "Invalid request body.", 400);
   }
 
   // Quietly discard automated submissions that fill the hidden honeypot.
@@ -51,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!isNonEmpty(payload.name) || !isNonEmpty(payload.email) || !isNonEmpty(payload.message)) {
-    return NextResponse.json({ error: "Name, email, and message are required." }, { status: 400 });
+    return fail("missing_fields", "Name, email, and message are required.", 400);
   }
 
   const email = payload.email.trim();
@@ -61,11 +70,11 @@ export async function POST(request: NextRequest) {
   const message = payload.message.trim();
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
+    return fail("invalid_email", "Please provide a valid email address.", 400);
   }
 
   if (name.length > 120 || email.length > 320 || phone.length > 40 || service.length > 160 || message.length > 3000) {
-    return NextResponse.json({ error: "Please shorten one or more fields and try again." }, { status: 400 });
+    return fail("too_long", "Please shorten one or more fields and try again.", 400);
   }
 
   const resend = new Resend(resendKey);
@@ -97,7 +106,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Contact email failed", error);
-    return NextResponse.json({ error: "Could not send your message. Please try again later." }, { status: 500 });
+    return fail("send_failed", "Could not send your message. Please try again later.", 500);
   }
 
   return NextResponse.json({ ok: true });

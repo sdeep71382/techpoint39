@@ -1,10 +1,13 @@
 import { Phone, Search } from "lucide-react";
+
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
+import { contact, type Service } from "@/i18n/services";
 import RequestBuilder from "@/components/request-builder";
-import type { Service } from "@/components/site-data";
 
 type HeroSectionProps = {
+  locale: Locale;
   activeService: Service;
-  services: Service[];
   checkedDocuments: string[];
   readyPercent: number;
   whatsappUrl: string;
@@ -12,57 +15,48 @@ type HeroSectionProps = {
   onToggleDocument: (document: string) => void;
 };
 
-const pillars = [
-  { title: "Clear", text: "Know the next step" },
-  { title: "Prepared", text: "Check documents first" },
-  { title: "Supported", text: "Ask before starting" },
-];
-
 export default function HeroSection({
+  locale,
   activeService,
-  services,
   checkedDocuments,
   readyPercent,
   whatsappUrl,
   onServiceChange,
   onToggleDocument,
 }: HeroSectionProps) {
+  const dict = getDictionary(locale);
+
   return (
     <section id="top" className="hero scroll-mt-[68px] pt-[68px]">
       <div className="shell grid items-center gap-10 py-12 sm:py-14 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14 lg:py-20">
         <div className="relative z-10">
           <p className="eyebrow">
             <span className="eyebrow-dot" />
-            Tech Point Services
+            {dict.hero.eyebrow}
           </p>
 
-          {/*
-            One size rule now. Previously the H1 carried a Tailwind clamp plus two
-            `!important` CSS declarations, so the largest of the three always won
-            no matter what was edited.
-          */}
+          {/* One size rule. The previous build had a Tailwind clamp plus two
+              `!important` declarations, so the largest always won. */}
           <h1 className="mt-6 max-w-[15ch] text-h1 font-bold text-navy">
-            Government service assistance, <span className="text-royal">minus the guesswork.</span>
+            {dict.hero.titleLead}
+            <span className="text-royal">{dict.hero.titleAccent}</span>
           </h1>
 
-          <p className="mt-6 max-w-[46ch] text-lead text-pretty text-muted">
-            Choose a service, check what to prepare, and reach a real person with a request that is
-            already clear.
-          </p>
+          <p className="mt-6 max-w-[46ch] text-lead text-pretty text-muted">{dict.hero.lead}</p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href="#services" className="btn btn-primary btn-lg">
               <Search className="h-[18px] w-[18px]" />
-              Find your service
+              {dict.hero.ctaFind}
             </a>
-            <a href="tel:+919780332509" className="btn btn-secondary btn-lg">
+            <a href={"tel:+91" + contact.phoneNumber} className="btn btn-secondary btn-lg">
               <Phone className="h-[18px] w-[18px]" />
-              Talk to support
+              {dict.hero.ctaCall}
             </a>
           </div>
 
           <dl className="mt-10 grid max-w-lg grid-cols-3 border-y border-line py-5">
-            {pillars.map((pillar, index) => (
+            {dict.hero.pillars.map((pillar, index) => (
               <div
                 key={pillar.title}
                 className={index === 1 ? "border-x border-line px-4" : index === 2 ? "pl-4" : "pr-4"}
@@ -75,8 +69,8 @@ export default function HeroSection({
         </div>
 
         <RequestBuilder
+          locale={locale}
           service={activeService}
-          services={services}
           checkedDocuments={checkedDocuments}
           readyPercent={readyPercent}
           whatsappUrl={whatsappUrl}

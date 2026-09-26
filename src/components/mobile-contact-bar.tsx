@@ -1,9 +1,17 @@
 import { MessageCircle, Phone } from "lucide-react";
-import { phoneNumber } from "@/components/site-data";
 
-type MobileContactBarProps = { whatsappUrl: string };
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
+import { contact } from "@/i18n/services";
 
-export default function MobileContactBar({ whatsappUrl }: MobileContactBarProps) {
+type MobileContactBarProps = {
+  locale: Locale;
+  whatsappUrl: string;
+};
+
+export default function MobileContactBar({ locale, whatsappUrl }: MobileContactBarProps) {
+  const dict = getDictionary(locale);
+
   return (
     /*
       Shown below 768px to match the header breakpoint. It used to disappear at
@@ -11,13 +19,13 @@ export default function MobileContactBar({ whatsappUrl }: MobileContactBarProps)
       with no visible way to make contact.
     */
     <div className="mobile-bar">
-      <a href={"tel:+91" + phoneNumber} className="btn btn-ghost">
+      <a href={"tel:+91" + contact.phoneNumber} className="btn btn-ghost">
         <Phone className="h-4 w-4" />
-        Call
+        {dict.mobileBar.call}
       </a>
       <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn btn-primary">
         <MessageCircle className="h-4 w-4" />
-        WhatsApp
+        {dict.mobileBar.whatsapp}
       </a>
     </div>
   );
