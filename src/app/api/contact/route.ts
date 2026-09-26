@@ -6,6 +6,31 @@ export const runtime = "nodejs";
 const defaultContactEmail = "techpointservices39@gmail.com";
 const defaultFromEmail = "Tech Point Services <onboarding@resend.dev>";
 
+/*
+ * A leftover placeholder in .env.local is worse than no key at all. Resend
+ * answers 401, the route reports send_failed, and the form looks like an
+ * outage rather than a missing credential. Catch the obvious placeholders
+ * before the request leaves the server so the response is the honest one and
+ * the logs point at the actual cause.
+ */
+function resolveApiKey(): string | null {
+  const key = process.env.RESEND_API_KEY?.trim();
+  if (!key) return null;
+  if (key.toLowerCase().includes("your_") || key.toLowerCase().includes("your-")) return null;
+  // Resend keys are `re_` followed by a long opaque token. Anything else is a
+  // copy/paste slip, and would only earn another 401.
+  if (!/^re_[A-Za-z0-9_-]{16,}$/.test(key)) return null;
+  return key;
+}
+
+/* Same idea for the sender: a placeholder domain fails at Resend, not here. */
+function resolveFromEmail(): string | null {
+  const from = process.env.FROM_EMAIL?.trim() || defaultFromEmail;
+  if (/(you|your|example|changeme|domain)\s*(at|@)/i.test(from)) return null;
+  if (from.toLowerCase().includes("example.com")) return null;
+  return from;
+}
+
 type ContactPayload = {
   name?: string;
   email?: string;
@@ -39,14 +64,6 @@ function escapeHtml(value: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const toEmail = process.env.CONTACT_EMAIL || defaultContactEmail;
-  const fromEmail = process.env.FROM_EMAIL || defaultFromEmail;
-
-  if (!resendKey) {
-    return fail("not_configured", "Email service is not configured.", 503);
-  }
-
   let payload: ContactPayload;
   try {
     payload = (await request.json()) as ContactPayload;
@@ -54,9 +71,27 @@ export async function POST(request: NextRequest) {
     return fail("invalid_body", "Invalid request body.", 400);
   }
 
-  // Quietly discard automated submissions that fill the hidden honeypot.
+  /*
+   * The honeypot is answered before anything else, including the config
+   * check. A bot that fills it always gets a quiet 200, so it never learns
+   * whether the form is working or who the sender is.
+   */
   if (isNonEmpty(payload.website)) {
     return NextResponse.json({ ok: true });
+  }
+
+  const resendKey = resolveApiKey();
+  const fromEmail = resolveFromEmail();
+  const toEmail = process.env.CONTACT_EMAIL?.trim() || defaultContactEmail;
+
+  if (!resendKey) {
+    console.error("Contact email disabled: RESEND_API_KEY is missing or still a placeholder.");
+    return fail("not_configured", "Email service is not configured.", 503);
+  }
+
+  if (!fromEmail) {
+    console.error("Contact email disabled: FROM_EMAIL is still a placeholder.");
+    return fail("not_configured", "Email service is not configured.", 503);
   }
 
   if (!isNonEmpty(payload.name) || !isNonEmpty(payload.email) || !isNonEmpty(payload.message)) {
@@ -105,8 +140,21 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    console.error("Contact email failed", error);
-    return fail("send_failed", "Could not send your message. Please try again later.", 500);
+    /*
+     * Log enough to tell the three real failure modes apart, none of which is
+     * the visitor's fault: 401 the key is wrong or revoked, 403 the sender
+     * domain is unverified (or onboarding@resend.dev is sending to an address
+     * other than the account owner), 422 Resend rejected the payload.
+     * The client only ever sees the generic code.
+     */
+    console.error("Contact email failed", {
+      statusCode: error.statusCode,
+      name: error.name,
+      message: error.message,
+      from: fromEmail,
+      to: toEmail,
+    });
+    return fail("send_failed", "Could not send your message. Please try again later.", 502);
   }
 
   return NextResponse.json({ ok: true });
