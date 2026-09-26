@@ -211,15 +211,36 @@ npm run build
 
 ## Contact Configuration
 
-The phone and WhatsApp number is `9780332509`. The contact form sends submissions through Resend to `techpointservices39@gmail.com` by default. Configure these environment variables in `.env.local`:
+The phone and WhatsApp number is `9780332509`. The contact form sends submissions through Resend to `techpointservices39@gmail.com` by default. Configure these environment variables in `.env.local`, and the equivalent three in the Vercel project settings:
 
 ```env
 RESEND_API_KEY=re_your_api_key
-FROM_EMAIL=Tech Point Services <your-verified-sender@example.com>
+FROM_EMAIL=Tech Point Services <hello@techpointservices.in>
 CONTACT_EMAIL=techpointservices39@gmail.com
 ```
 
-`FROM_EMAIL` must use a sender verified in Resend. The default, `onboarding@resend.dev`, only delivers to the Resend account owner. WhatsApp links are generated from the currently selected service and checklist state.
+Run `npm run check:email` after editing. It validates the key, lists verified sending domains, and performs a real test send, printing the specific fix for whichever step fails.
+
+WhatsApp links are generated from the currently selected service and checklist state.
+
+### Verified sender and inbox placement
+
+`FROM_EMAIL` must be a sender verified in Resend, and the domain to verify is one the site already owns: `techpointservices.in`.
+
+Until that is done the only usable sender is `onboarding@resend.dev`, which is Resend's shared free-tier domain. It has two consequences:
+
+- **It only delivers to the inbox that owns the API key.** Pointing `CONTACT_EMAIL` at any other address stops all mail, with no error on the form.
+- **Gmail treats it as an unverified bulk sender.** Messages are normally accepted, so Resend reports `last_event: "delivered"`, but they land in Spam or a filtered tab instead of the Primary inbox. The visitor sees the success message and the enquiry goes quiet. This is the single most likely reason for a "form works but no mail arrives" report.
+
+Verifying `techpointservices.in` fixes both. Add the domain at https://resend.com/domains, publish the SPF and DKIM records it returns at the DNS host, wait for the status to read `verified`, then set `FROM_EMAIL=Tech Point Services <hello@techpointservices.in>` and redeploy on Vercel. Note that Vercel only applies environment variable changes to a new deployment.
+
+Because Gmail-side filtering is invisible to the sender, every accepted send logs its Resend id to the Vercel runtime logs:
+
+```
+Contact email accepted { id: '01a0df03-...', service: 'Passport', replyTo: '...' }
+```
+
+That id is the join key to the Resend dashboard, so an enquiry that went quiet can still be traced after the fact.
 
 ## Open Items
 
@@ -227,7 +248,7 @@ Decisions taken during the redesign that are still worth a second opinion:
 
 - **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). Confirmed during Phase 2, when the hero grid was retuned against a 1280px measure. The old width put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
 - **Hero headline size** — the `h1` clamp cap sits at 3.75rem (60px) so the hero fits one screen. Restoring the larger 4.15rem cap would need a shorter headline string, since the column width is what forces the line count, not the font size.
-- **Verified sender** — see Contact Configuration above; `FROM_EMAIL` needs a verified Resend sender before real enquiries will arrive.
+- **Verified sender** - `FROM_EMAIL` is still `onboarding@resend.dev`. Mail is being sent and accepted by Gmail, but it is landing in Spam rather than the Primary inbox, so enquiries are going unnoticed. Verifying `techpointservices.in` resolves this; see Contact Configuration above. Until then, check Spam rather than concluding the form is broken.
 
 ## Disclaimer
 

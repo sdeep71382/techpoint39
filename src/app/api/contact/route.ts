@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
   }
 
   const resend = new Resend(resendKey);
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: fromEmail,
     to: toEmail,
     replyTo: email,
@@ -156,6 +156,21 @@ export async function POST(request: NextRequest) {
     });
     return fail("send_failed", "Could not send your message. Please try again later.", 502);
   }
+
+  /*
+   * Accepted by Resend is not the same as seen by the owner. Gmail routinely
+   * files mail from a shared domain such as onboarding@resend.dev into Spam,
+   * and Resend still reports it as delivered, so the request cannot tell the
+   * difference. Log the id so any enquiry that goes quiet can be traced in the
+   * Resend dashboard, and keep a copy of the sender's details here.
+   */
+  console.log("Contact email accepted", {
+    id: data?.id,
+    service,
+    replyTo: email,
+    from: fromEmail,
+    to: toEmail,
+  });
 
   return NextResponse.json({ ok: true });
 }
