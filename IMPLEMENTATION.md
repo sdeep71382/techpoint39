@@ -70,7 +70,9 @@ The checklist is guidance only. The interface states that exact requirements can
 
 ## Key Files
 
-- `src/app/page.tsx`: Page structure, content, service data, and interactions
+- `src/app/page.tsx`: Page-level state and component composition
+- `src/components/site-data.ts`: Shared service content, categories, FAQs, and brand contact details
+- `src/components/`: Independent header, hero, request builder, service directory, content sections, contact, footer, and mobile action components
 - `src/app/globals.css`: Visual system, responsive rules, and interaction states
 - `src/app/layout.tsx`: Metadata and root layout
 - `tailwind.config.ts`: Brand tokens and Tailwind configuration

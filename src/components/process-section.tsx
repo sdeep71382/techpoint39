@@ -1,0 +1,5 @@
+import { steps } from "@/components/site-data";
+
+export default function ProcessSection() {
+  return <section id="process" className="scroll-mt-20 bg-[#071f4f] py-20 text-white sm:py-24"><div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8"><div className="max-w-2xl"><p className="section-kicker text-[#ffd21f]">How it works</p><h2 className="section-title text-white">A useful path, from question to next step.</h2><p className="section-copy text-blue-100">Each stage exists to remove uncertainty before your request moves forward.</p></div><div className="mt-12 grid border-y border-white/15 md:grid-cols-4 md:divide-x md:divide-white/15">{steps.map((step) => { const Icon = step.icon; return <div key={step.number} className="group relative py-8 md:px-6 md:py-9 first:pl-0 last:pr-0"><div className="flex items-center justify-between"><span className="text-xs font-black tracking-[0.2em] text-[#ffd21f]">{step.number}</span><Icon className="h-5 w-5 text-blue-300 transition group-hover:text-white" /></div><h3 className="mt-8 text-lg font-black">{step.title}</h3><p className="mt-3 text-sm leading-6 text-blue-100">{step.text}</p></div>; })}</div></div></section>;
+}

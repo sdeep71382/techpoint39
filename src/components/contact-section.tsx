@@ -1,0 +1,9 @@
+import { Mail, MessageCircle, Phone } from "lucide-react";
+import ContactForm from "@/components/contact-form";
+import { email, phoneNumber } from "@/components/site-data";
+
+type ContactSectionProps = { whatsappUrl: string };
+
+export default function ContactSection({ whatsappUrl }: ContactSectionProps) {
+  return <section id="contact" className="bg-[#0857d6] py-16 text-white sm:py-20"><div className="mx-auto grid max-w-[1320px] items-start gap-10 px-4 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8"><div><p className="text-sm font-black uppercase tracking-[0.2em] text-[#ffd21f]">Ready when you are</p><h2 className="mt-3 max-w-3xl text-3xl font-black leading-tight sm:text-4xl">Start with the service. We will help make the next step clear.</h2><div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-blue-100"><a href={"tel:+91" + phoneNumber} className="inline-flex items-center gap-2 hover:text-white"><Phone className="h-4 w-4" /> {phoneNumber}</a><a href={"mailto:" + email} className="inline-flex items-center gap-2 hover:text-white"><Mail className="h-4 w-4" /> {email}</a></div><a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-7 inline-flex h-12 items-center justify-center gap-2 bg-[#ffd21f] px-6 font-black text-[#07101f] transition hover:bg-white focus:outline-none focus:ring-4 focus:ring-white/30"><MessageCircle className="h-5 w-5" /> Continue on WhatsApp</a></div><div className="bg-white p-5 text-slate-950 shadow-[0_24px_60px_rgba(7,31,79,0.2)] sm:p-7"><div className="mb-6"><p className="text-xs font-black uppercase tracking-[0.16em] text-[#0857d6]">Send an enquiry</p><h3 className="mt-2 text-2xl font-black text-[#071f4f]">Tell us what you need.</h3><p className="mt-2 text-sm leading-6 text-slate-500">We will review your request and respond with the next useful step.</p></div><ContactForm /></div></div></section>;
+}
