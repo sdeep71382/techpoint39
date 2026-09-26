@@ -24,8 +24,15 @@ export default function SiteFooter({ locale }: { locale: Locale }) {
       <div className="shell grid gap-10 py-12 md:grid-cols-[1.3fr_1fr_1fr] md:gap-8">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="relative h-9 w-[46px] flex-none overflow-hidden border border-white/15 bg-paper">
-              <Image src="/techpoint-logo.jpeg" alt="" fill className="object-contain p-1" sizes="46px" />
+            <span className="flex-none border border-white/15 bg-paper">
+              <Image
+                src="/techpoint-logo-46.png"
+                alt=""
+                width={46}
+                height={33}
+                sizes="46px"
+                loading="lazy"
+              />
             </span>
             {/* The wordmark is a brand asset, so it stays in Latin script everywhere. */}
             <span lang="en" className="font-display text-small font-bold uppercase tracking-[0.14em] text-white">

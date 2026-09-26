@@ -96,9 +96,13 @@ closing contact section is allowed the most.
 | Viewport | Hero height | Notes |
 | --- | --- | --- |
 | 1280px and up | 762px | Fits one 820px screen |
-| 1152px | ~690px | |
-| 1024px | 919px | Tightest desktop case; the two CTAs are `white-space: nowrap`, so their 414px row pins the text track and the headline takes five lines |
+| 1024px | 916px | Tightest desktop case. The two CTAs are `white-space: nowrap`, so their combined 414px sets a floor on the text column; below roughly 1040px of viewport they wrap to two rows via `sm:flex-wrap` |
 | 768px and below | Stacked | Text above a full-width builder |
+
+The CTA row is `sm:flex-wrap lg:flex-row`. Allowing it to wrap means the text column
+can shrink below the nowrap buttons' natural width instead of being pinned by it,
+which is what keeps 1024px from growing further. Above `lg` the buttons are forced
+onto one row, so the two-column hero never shows a ragged stack of CTAs.
 
 ## Purposeful Interactions
 
@@ -184,7 +188,8 @@ Each service carries a name, description, turnaround, and document checklist in 
 - `src/components/`: Independent header, hero, request builder, service directory, content sections, contact, footer, and mobile action components
 - `src/app/globals.css`: Design tokens, base styles, per-locale font swap, and component classes
 - `tailwind.config.ts`: Brand tokens, type scale, and Tailwind configuration
-- `public/techpoint-logo.jpeg`: Supplied logo asset
+- `public/techpoint-logo-52.png`, `-46.png`: Render-size logo assets derived from the supplied JPEG
+- `public/techpoint-logo.jpeg`: Supplied logo asset, kept as the source of truth for those two
 - `public/techpoint-services-flyer.jpeg`: Original brand reference
 - `public/favicon.svg`: Site icon
 
@@ -221,7 +226,7 @@ CONTACT_EMAIL=techpointservices39@gmail.com
 Decisions taken during the redesign that are still worth a second opinion:
 
 - **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). Confirmed during Phase 2, when the hero grid was retuned against a 1280px measure. The old width put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
-- **Logo weight** — `public/techpoint-logo.jpeg` is about 55 KB and renders at 52px in the header and 46px in the footer. A small PNG or SVG would cut roughly 50 KB from the critical path. The asset is a supplied file, so it was left untouched.
+- **Hero headline size** — the `h1` clamp cap sits at 3.75rem (60px) so the hero fits one screen. Restoring the larger 4.15rem cap would need a shorter headline string, since the column width is what forces the line count, not the font size.
 - **Verified sender** — see Contact Configuration above; `FROM_EMAIL` needs a verified Resend sender before real enquiries will arrive.
 
 ## Disclaimer

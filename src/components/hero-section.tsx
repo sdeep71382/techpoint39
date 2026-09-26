@@ -50,7 +50,7 @@ export default function HeroSection({
 
           <p className="mt-5 max-w-[46ch] text-lead text-pretty text-muted">{dict.hero.lead}</p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-wrap lg:flex-row">
             <a href="#services" className="btn btn-primary btn-lg">
               <Search className="h-[18px] w-[18px]" />
               {dict.hero.ctaFind}

@@ -150,8 +150,15 @@ export default function SiteHeader({ locale }: { locale: Locale }) {
     <header className="site-header" data-scrolled={isScrolled}>
       <div className="shell flex h-[68px] items-center justify-between gap-4">
         <a href="#top" className="flex items-center gap-2.5" aria-label={dict.nav.home}>
-          <span className="relative h-10 w-[52px] flex-none overflow-hidden border border-line bg-paper">
-            <Image src="/techpoint-logo.jpeg" alt="" fill priority className="object-contain p-1" sizes="52px" />
+          <span className="flex-none border border-line bg-paper">
+            <Image
+              src="/techpoint-logo-52.png"
+              alt=""
+              width={52}
+              height={37}
+              priority
+              sizes="52px"
+            />
           </span>
           {/* The wordmark is a brand asset, so it stays in Latin script everywhere. */}
           <span className="leading-none" lang="en">
