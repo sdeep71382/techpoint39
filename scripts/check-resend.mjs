@@ -120,9 +120,18 @@ if (domains.error) {
 }
 ok("key accepted by the Resend API");
 
-const list = domains.data ?? [];
+/*
+ * resend v6 wraps the page as { data: { data: [...], has_more } } while some
+ * versions hand back a bare array. Accept either so this script keeps working
+ * across an upgrade.
+ */
+const page = domains.data;
+const list = Array.isArray(page) ? page : Array.isArray(page?.data) ? page.data : [];
 if (list.length === 0) {
-  warn("no domains on this account");
+  warn("no sending domains on this account");
+  note("Without one, onboarding@resend.dev is the only sender available, and");
+  note("Resend only lets it deliver to the inbox that owns this API key.");
+  note("Verify a domain at https://resend.com/domains to send from your own address.");
 } else {
   for (const domain of list) {
     const mark = domain.status === "verified" ? `${GREEN}verified${OFF}` : `${YELLOW}${domain.status}${OFF}`;
