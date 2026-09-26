@@ -63,7 +63,7 @@ export default function ServiceDirectory({
 
   return (
     <section id="services" className="scroll-mt-20 bg-paper">
-      <div className="shell section-pad">
+      <div className="shell section-pad-tight">
         <div className="grid gap-7 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
           <div>
             <p className="kicker text-royal">{dict.directory.kicker}</p>

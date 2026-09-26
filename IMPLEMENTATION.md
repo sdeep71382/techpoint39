@@ -63,13 +63,42 @@ The dictionaries contain formatting functions (`left(n)`, `resultCount(shown, to
 | `h4` | 17px | Card titles, FAQ questions |
 | `h3` | 21px | Panel titles |
 | `h2` | clamp(28px → 41.6px) | Section headings |
-| `h1` | clamp(38.4px → 66.4px) | Hero only |
+| `h1` | clamp(38.4px → 60px) | Hero only |
+
+The `h1` cap is 3.75rem (60px), not 4.15rem. In the hero's text column — 507px at a
+1280px viewport — a 66px headline broke to five lines and pushed the whole hero past
+the fold. At 60px it breaks to four, which keeps the hero on one screen without
+making the headline feel small.
 
 **Colour tokens** — `royal`, `navy`, `navy-deep`, `ink`, `signal`, `alert`, `canvas`, `paper`, `tint`, `line`, `line-strong`, `muted`, `muted-strong`, `on-navy`, `on-navy-soft`, `on-navy-muted`
 
-**Component classes** live in `@layer components` in `src/app/globals.css`: `shell`, `section-pad`, `kicker`, `eyebrow`, `section-title`, `section-copy`, `local-label`, `meta-label`, `btn` + variants, `btn-round`, `badge` + variants, `field`, `field-label`, `select-wrap`, `chip`, `service-card` + modifiers, `icon-tile` + accents, `doc-row`, `doc-check`, `panel`, `panel-topbar`, `meter`, `note-strip`, `nav-link`, `faq-answer`, `faq-row`, `site-header`, `hero`, `band-navy`, `site-footer`, `mobile-bar`.
+**Component classes** live in `@layer components` in `src/app/globals.css`: `shell`, `section-pad`, `section-pad-tight`, `section-pad-lead`, `kicker`, `eyebrow`, `section-title`, `section-copy`, `local-label`, `meta-label`, `btn` + variants, `btn-round`, `badge` + variants, `field`, `field-label`, `select-wrap`, `chip`, `service-card` + modifiers, `icon-tile` + accents, `doc-row`, `doc-check`, `panel`, `panel-topbar`, `meter`, `note-strip`, `nav-link`, `faq-answer`, `faq-row`, `site-header`, `hero`, `band-navy`, `site-footer`, `mobile-bar`.
 
 Because component classes sit in `@layer components`, plain Tailwind utilities override them without `!important`. Do not reintroduce `!important` overrides or redefine Tailwind class names globally.
+
+**Section rhythm** — three padding tiers, each stepping at 640px and 1024px rather than
+jumping straight from phone to desktop padding:
+
+| Class | < 640px | ≥ 640px | ≥ 1024px | Used by |
+| --- | --- | --- | --- | --- |
+| `section-pad-tight` | 56px | 56px | 64px | Service directory |
+| `section-pad` | 56px | 72px | 80px | Process, why us, questions |
+| `section-pad-lead` | 56px | 80px | 88px | Contact (closing section) |
+
+The previous build gave every section a flat 5.5rem, which stacked up to 176px of
+blank space between two adjacent sections and made the page read as a series of
+unrelated blocks. The three tiers give the page a hierarchy: the long
+self-scrolling directory supplies its own rhythm and gets the least air, the
+closing contact section is allowed the most.
+
+**Hero height** — measured, not estimated:
+
+| Viewport | Hero height | Notes |
+| --- | --- | --- |
+| 1280px and up | 762px | Fits one 820px screen |
+| 1152px | ~690px | |
+| 1024px | 919px | Tightest desktop case; the two CTAs are `white-space: nowrap`, so their 414px row pins the text track and the headline takes five lines |
+| 768px and below | Stacked | Text above a full-width builder |
 
 ## Purposeful Interactions
 
@@ -191,7 +220,7 @@ CONTACT_EMAIL=techpointservices39@gmail.com
 
 Decisions taken during the redesign that are still worth a second opinion:
 
-- **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). The old measure put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
+- **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). Confirmed during Phase 2, when the hero grid was retuned against a 1280px measure. The old width put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
 - **Logo weight** — `public/techpoint-logo.jpeg` is about 55 KB and renders at 52px in the header and 46px in the footer. A small PNG or SVG would cut roughly 50 KB from the critical path. The asset is a supplied file, so it was left untouched.
 - **Verified sender** — see Contact Configuration above; `FROM_EMAIL` needs a verified Resend sender before real enquiries will arrive.
 

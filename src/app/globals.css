@@ -128,12 +128,51 @@
     }
   }
 
-  .section-pad {
-    padding-block: 4.5rem;
+  /*
+   * Section rhythm.
+   *
+   * Three steps rather than two, so the vertical spacing scales with the
+   * viewport instead of jumping straight from phone to desktop padding.
+   *
+   * The previous build gave every section the same 5.5rem, which stacked up to
+   * 176px of blank space between two adjacent sections on a laptop screen and
+   * made the page read as a series of unrelated blocks. The three tiers give
+   * the page a hierarchy instead:
+   *
+   *   section-pad        the default, for a full section
+   *   section-pad-tight  for long self-scrolling lists that supply their own rhythm
+   *   section-pad-lead   for the closing section, which is allowed to breathe
+   */
+  .section-pad,
+  .section-pad-tight,
+  .section-pad-lead {
+    padding-block: 3.5rem;
   }
 
   @media (min-width: 640px) {
     .section-pad {
+      padding-block: 4.5rem;
+    }
+
+    .section-pad-tight {
+      padding-block: 3.5rem;
+    }
+
+    .section-pad-lead {
+      padding-block: 5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-pad {
+      padding-block: 5rem;
+    }
+
+    .section-pad-tight {
+      padding-block: 4rem;
+    }
+
+    .section-pad-lead {
       padding-block: 5.5rem;
     }
   }
@@ -547,13 +586,13 @@
   .doc-row {
     display: flex;
     width: 100%;
-    min-height: 3rem;
+    min-height: 2.75rem;
     align-items: center;
     gap: 0.75rem;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--paper);
-    padding: 0.6rem 0.85rem;
+    padding: 0.5rem 0.8rem;
     text-align: left;
     font-size: 0.9375rem;
     line-height: 1.4;
@@ -609,7 +648,7 @@
     gap: 0.75rem;
     border-radius: 17px 17px 0 0;
     background: var(--navy);
-    padding: 0.9rem 1.25rem;
+    padding: 0.75rem 1.15rem;
     color: #fff;
   }
 
@@ -634,7 +673,7 @@
     border-top: 1px solid var(--line);
     border-radius: 0 0 17px 17px;
     background: #fffaf0;
-    padding: 0.8rem 1.25rem;
+    padding: 0.7rem 1.15rem;
     font-size: 0.8125rem;
     line-height: 1.3rem;
     color: var(--navy);

@@ -47,11 +47,11 @@ export default function RequestBuilder({
       </div>
 
       <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="border-b border-line bg-canvas p-5 sm:p-6 lg:border-b-0 lg:border-r">
+        <div className="border-b border-line bg-canvas p-4 sm:p-5 lg:border-b-0 lg:border-r">
           <label htmlFor="service-select" className="meta-label text-muted-strong">
             {dict.builder.stepService}
           </label>
-          <div className="select-wrap mt-3">
+          <div className="select-wrap mt-2.5">
             <select
               id="service-select"
               className="field font-semibold text-navy"
@@ -67,24 +67,24 @@ export default function RequestBuilder({
             <ChevronDown />
           </div>
 
-          <div className="mt-5 rounded-card border border-line bg-paper p-5">
-            <span className={"icon-tile icon-tile-" + service.accent}>
-              <Icon className="h-6 w-6" />
+          <div className="mt-4 rounded-card border border-line bg-paper p-4">
+            <span className={"icon-tile icon-tile-" + service.accent + " h-10 w-10 rounded-[10px]"}>
+              <Icon className="h-5 w-5" />
             </span>
-            <p className="meta-label mt-5 text-muted-strong">
+            <p className="meta-label mt-4 text-muted-strong">
               {dict.directory.categories[service.category]}
             </p>
-            <h2 className="mt-2 text-h3 font-bold text-navy">{service.name[locale]}</h2>
-            <ServiceLocalLabel service={service} locale={locale} className="mt-2 block text-royal" />
-            <p className="mt-3 text-small leading-relaxed text-muted">{service.description[locale]}</p>
-            <p className="mt-4 flex items-center gap-1.5 text-micro font-medium text-muted-strong">
+            <h2 className="mt-1.5 text-h3 font-bold text-navy">{service.name[locale]}</h2>
+            <ServiceLocalLabel service={service} locale={locale} className="mt-1.5 block text-royal" />
+            <p className="mt-2.5 text-small leading-relaxed text-muted">{service.description[locale]}</p>
+            <p className="mt-3 flex items-center gap-1.5 text-micro font-medium text-muted-strong">
               <Clock3 className="h-3.5 w-3.5 flex-none" />
               {service.turnaround[locale]}
             </p>
           </div>
         </div>
 
-        <div className="p-5 sm:p-6">
+        <div className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="meta-label text-muted-strong">{dict.builder.stepDocs}</p>
@@ -96,7 +96,7 @@ export default function RequestBuilder({
           </div>
 
           <div
-            className="meter mt-4"
+            className="meter mt-3"
             role="progressbar"
             aria-label={dict.builder.meterLabel}
             aria-valuenow={readyPercent}
@@ -106,7 +106,7 @@ export default function RequestBuilder({
             <div className="meter-fill" style={{ width: readyPercent + "%" }} />
           </div>
 
-          <div className="mt-5 grid gap-2">
+          <div className="mt-4 grid gap-1.5">
             {documents.map((document) => {
               const checked = checkedDocuments.includes(document);
               return (
@@ -126,7 +126,7 @@ export default function RequestBuilder({
             })}
           </div>
 
-          <p className="mt-4 flex items-start gap-2 text-micro leading-relaxed text-muted">
+          <p className="mt-3.5 flex items-start gap-2 text-micro leading-relaxed text-muted">
             <CircleHelp className="mt-0.5 h-3.5 w-3.5 flex-none" />
             {dict.builder.note}
           </p>
@@ -135,7 +135,7 @@ export default function RequestBuilder({
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="btn btn-primary btn-lg mt-5 w-full"
+            className="btn btn-primary btn-lg mt-4 w-full"
           >
             <MessageCircle className="h-[18px] w-[18px]" />
             {dict.builder.cta}

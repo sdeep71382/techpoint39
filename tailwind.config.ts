@@ -53,7 +53,13 @@ const config: Config = {
         h4: ["1.0625rem", { lineHeight: "1.5rem" }],
         h3: ["1.3125rem", { lineHeight: "1.6rem" }],
         h2: ["clamp(1.75rem, 1.3rem + 1.9vw, 2.6rem)", { lineHeight: "1.14", letterSpacing: "-0.021em" }],
-        h1: ["clamp(2.4rem, 1.5rem + 3.9vw, 4.15rem)", { lineHeight: "1.03", letterSpacing: "-0.032em" }],
+        /*
+         * The cap is 3.75rem rather than 4.15rem. In the hero's text column
+         * (507px at 1280px) a 66px headline broke to five lines and pushed the
+         * whole hero past the fold. At 60px it breaks to four, which keeps the
+         * hero on one screen without making the headline feel small.
+         */
+        h1: ["clamp(2.4rem, 1.5rem + 3.9vw, 3.75rem)", { lineHeight: "1.04", letterSpacing: "-0.032em" }],
       },
 
       /*

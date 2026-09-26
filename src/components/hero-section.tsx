@@ -28,7 +28,13 @@ export default function HeroSection({
 
   return (
     <section id="top" className="hero scroll-mt-[68px] pt-[68px]">
-      <div className="shell grid items-center gap-10 py-12 sm:py-14 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14 lg:py-20">
+      {/*
+        The `lg` padding and the grid ratio are both tuned against a 1280x800
+        laptop, which is the tightest desktop case. At 0.88/1.12 the builder gets
+        the wider column it needs to stay short, which is what keeps the whole
+        hero to about one screen instead of running well past the fold.
+      */}
+      <div className="shell grid items-center gap-10 py-10 sm:py-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-12 lg:py-14">
         <div className="relative z-10">
           <p className="eyebrow">
             <span className="eyebrow-dot" />
@@ -37,14 +43,14 @@ export default function HeroSection({
 
           {/* One size rule. The previous build had a Tailwind clamp plus two
               `!important` declarations, so the largest always won. */}
-          <h1 className="mt-6 max-w-[15ch] text-h1 font-bold text-navy">
+          <h1 className="mt-5 max-w-[15ch] text-h1 font-bold text-navy">
             {dict.hero.titleLead}
             <span className="text-royal">{dict.hero.titleAccent}</span>
           </h1>
 
-          <p className="mt-6 max-w-[46ch] text-lead text-pretty text-muted">{dict.hero.lead}</p>
+          <p className="mt-5 max-w-[46ch] text-lead text-pretty text-muted">{dict.hero.lead}</p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <a href="#services" className="btn btn-primary btn-lg">
               <Search className="h-[18px] w-[18px]" />
               {dict.hero.ctaFind}
@@ -55,7 +61,7 @@ export default function HeroSection({
             </a>
           </div>
 
-          <dl className="mt-10 grid max-w-lg grid-cols-3 border-y border-line py-5">
+          <dl className="mt-8 grid max-w-lg grid-cols-3 border-y border-line py-4">
             {dict.hero.pillars.map((pillar, index) => (
               <div
                 key={pillar.title}

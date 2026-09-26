@@ -15,7 +15,8 @@ export default function ContactSection({ locale, whatsappUrl }: ContactSectionPr
 
   return (
     <section id="contact" className="band-navy scroll-mt-20">
-      <div className="shell section-pad grid items-start gap-10 lg:grid-cols-[0.85fr_1.15fr]">
+      {/* The closing section carries the most weight, so it gets the most air. */}
+      <div className="shell section-pad-lead grid items-start gap-10 lg:grid-cols-[0.85fr_1.15fr]">
         <div>
           <p className="kicker text-signal">{dict.contact.kicker}</p>
           <h2 className="mt-3 text-h2 font-bold text-white">{dict.contact.title}</h2>
