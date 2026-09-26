@@ -1,5 +1,41 @@
 import { steps } from "@/components/site-data";
 
 export default function ProcessSection() {
-  return <section id="process" className="scroll-mt-20 bg-[#071f4f] py-20 text-white sm:py-24"><div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8"><div className="max-w-2xl"><p className="section-kicker text-[#ffd21f]">How it works</p><h2 className="section-title text-white">A useful path, from question to next step.</h2><p className="section-copy text-blue-100">Each stage exists to remove uncertainty before your request moves forward.</p></div><div className="mt-12 grid border-y border-white/15 md:grid-cols-4 md:divide-x md:divide-white/15">{steps.map((step) => { const Icon = step.icon; return <div key={step.number} className="group relative py-8 md:px-6 md:py-9 first:pl-0 last:pr-0"><div className="flex items-center justify-between"><span className="text-xs font-black tracking-[0.2em] text-[#ffd21f]">{step.number}</span><Icon className="h-5 w-5 text-blue-300 transition group-hover:text-white" /></div><h3 className="mt-8 text-lg font-black">{step.title}</h3><p className="mt-3 text-sm leading-6 text-blue-100">{step.text}</p></div>; })}</div></div></section>;
+  return (
+    <section id="process" className="band-navy scroll-mt-20">
+      <div className="shell section-pad">
+        <div className="max-w-2xl">
+          <p className="kicker">How it works</p>
+          <h2 className="section-title mt-3">A useful path, from question to next step.</h2>
+          <p className="section-copy mt-4 text-pretty">
+            Each stage exists to remove uncertainty before your request moves forward.
+          </p>
+        </div>
+
+        <ol className="mt-12 grid gap-4 md:grid-cols-4 md:gap-0">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <li
+                key={step.number}
+                className={
+                  "rounded-card border border-white/15 bg-white/[0.04] p-5 md:rounded-none md:border-y-0 md:border-l-0 md:bg-transparent md:p-6 md:py-8 " +
+                  (index === 0 ? "md:pl-0" : "md:border-l md:border-white/15")
+                }
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-display text-small font-bold tracking-[0.18em] text-signal">
+                    {step.number}
+                  </span>
+                  <Icon className="h-5 w-5 text-on-navy-muted" />
+                </div>
+                <h3 className="mt-6 text-h4 font-semibold text-white">{step.title}</h3>
+                <p className="mt-2 text-small leading-relaxed text-on-navy-soft">{step.text}</p>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
+  );
 }

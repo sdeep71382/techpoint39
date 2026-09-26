@@ -1,16 +1,138 @@
-import { Check, ChevronDown, CircleHelp, Clock3, MessageCircle, Zap } from "lucide-react";
+import { Check, ChevronDown, CircleHelp, Clock3, MessageCircle } from "lucide-react";
+import ServiceLocalLabel from "@/components/service-local-label";
 import type { Service } from "@/components/site-data";
 
-type RequestBuilderProps = { service: Service; services: Service[]; checkedDocuments: string[]; readyPercent: number; whatsappUrl: string; onServiceChange: (serviceId: string) => void; onToggleDocument: (document: string) => void; };
+type RequestBuilderProps = {
+  service: Service;
+  services: Service[];
+  checkedDocuments: string[];
+  readyPercent: number;
+  whatsappUrl: string;
+  onServiceChange: (serviceId: string) => void;
+  onToggleDocument: (document: string) => void;
+};
 
-export default function RequestBuilder({ service, services: serviceOptions, checkedDocuments, readyPercent, whatsappUrl, onServiceChange, onToggleDocument }: RequestBuilderProps) {
+export default function RequestBuilder({
+  service,
+  services: serviceOptions,
+  checkedDocuments,
+  readyPercent,
+  whatsappUrl,
+  onServiceChange,
+  onToggleDocument,
+}: RequestBuilderProps) {
   const Icon = service.icon;
-  return <div id="request-builder" className="request-shell scroll-mt-28">
-    <div className="request-topbar"><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center bg-[#ffd21f] text-[#07101f]"><Zap className="h-4 w-4" /></span><div><p className="text-sm font-black text-white">Build your request</p><p className="mt-0.5 text-xs text-blue-200">A quick preparation check</p></div></div><span className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300"><span className="h-2 w-2 animate-pulse bg-emerald-400" /> Support available</span></div>
-    <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
-      <div className="border-b border-slate-200 bg-[#f4f7fb] p-5 sm:p-6 lg:border-b-0 lg:border-r"><label htmlFor="service-select" className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">1. Select service</label><div className="relative mt-3"><select id="service-select" value={service.id} onChange={(event) => onServiceChange(event.target.value)} className="h-12 w-full appearance-none border border-slate-300 bg-white px-4 pr-10 text-sm font-black text-[#071f4f] outline-none focus:border-[#0857d6] focus:ring-4 focus:ring-blue-100">{serviceOptions.map((option) => <option key={option.id} value={option.id}>{option.title}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /></div><div className="mt-6 border border-slate-200 bg-white p-5"><span className={"service-icon service-icon-" + service.accent}><Icon className="h-6 w-6" /></span><p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{service.category}</p><h2 className="mt-2 text-xl font-black text-[#071f4f]">{service.title}</h2><p className="mt-2 text-xs font-semibold leading-5 text-[#0857d6]">{service.localTitle}</p><p className="mt-4 text-sm leading-6 text-slate-600">{service.description}</p></div></div>
-      <div className="bg-white p-5 sm:p-6"><div className="flex items-start justify-between gap-5"><div><p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">2. Check what you have</p><h3 className="mt-2 text-lg font-black text-[#071f4f]">Starter document list</h3></div><span className="readiness" aria-live="polite">{readyPercent}% ready</span></div><div className="mt-4 h-1.5 overflow-hidden bg-slate-100" aria-hidden="true"><div className="h-full bg-[#0857d6] transition-all duration-500" style={{ width: readyPercent + "%" }} /></div><div className="mt-5 grid gap-2">{service.documents.map((document) => { const checked = checkedDocuments.includes(document); return <button key={document} type="button" onClick={() => onToggleDocument(document)} className={"document-check " + (checked ? "document-check-active" : "")} aria-pressed={checked}><span className="check-box"><Check className="h-3.5 w-3.5" /></span><span>{document}</span></button>; })}</div><p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500"><CircleHelp className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Exact requirements may vary. We confirm them before work begins.</p><a href={whatsappUrl} target="_blank" rel="noreferrer" className="primary-button mt-5 h-12 w-full justify-center"><MessageCircle className="h-[18px] w-[18px]" /> Send prepared request</a></div>
+  const missingCount = service.documents.length - checkedDocuments.length;
+
+  return (
+    <div id="request-builder" className="panel scroll-mt-24">
+      <div className="panel-topbar">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-signal text-ink">
+            <Check className="h-4 w-4" strokeWidth={3} />
+          </span>
+          <div className="leading-tight">
+            <p className="text-small font-semibold text-white">Build your request</p>
+            <p className="mt-0.5 text-micro text-on-navy-muted">A quick preparation check</p>
+          </div>
+        </div>
+        <span className="badge badge-signal whitespace-nowrap">{readyPercent}% ready</span>
+      </div>
+
+      <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="border-b border-line bg-canvas p-5 sm:p-6 lg:border-b-0 lg:border-r">
+          <label htmlFor="service-select" className="meta-label text-muted-strong">
+            1. Select service
+          </label>
+          <div className="select-wrap mt-3">
+            <select
+              id="service-select"
+              className="field font-semibold text-navy"
+              value={service.id}
+              onChange={(event) => onServiceChange(event.target.value)}
+            >
+              {serviceOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.title}
+                </option>
+              ))}
+            </select>
+            <ChevronDown />
+          </div>
+
+          <div className="mt-5 rounded-card border border-line bg-paper p-5">
+            <span className={"icon-tile icon-tile-" + service.accent}>
+              <Icon className="h-6 w-6" />
+            </span>
+            <p className="meta-label mt-5 text-muted-strong">{service.category}</p>
+            <h2 className="mt-2 text-h3 font-bold text-navy">{service.title}</h2>
+            <ServiceLocalLabel service={service} className="mt-2 block text-royal" />
+            <p className="mt-3 text-small leading-relaxed text-muted">{service.description}</p>
+            <p className="mt-4 flex items-center gap-1.5 text-micro font-medium text-muted-strong">
+              <Clock3 className="h-3.5 w-3.5 flex-none" />
+              {service.turnaround}
+            </p>
+          </div>
+        </div>
+
+        <div className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="meta-label text-muted-strong">2. Check what you have</p>
+              <h3 className="mt-1.5 text-h4 font-semibold text-navy">Starter document list</h3>
+            </div>
+            <span className="badge badge-outline">
+              {missingCount === 0 ? "All ready" : missingCount + " left"}
+            </span>
+          </div>
+
+          <div
+            className="meter mt-4"
+            role="progressbar"
+            aria-label="Document readiness"
+            aria-valuenow={readyPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div className="meter-fill" style={{ width: readyPercent + "%" }} />
+          </div>
+
+          <div className="mt-5 grid gap-2">
+            {service.documents.map((document) => {
+              const checked = checkedDocuments.includes(document);
+              return (
+                <button
+                  key={document}
+                  type="button"
+                  className="doc-row"
+                  onClick={() => onToggleDocument(document)}
+                  aria-pressed={checked}
+                >
+                  <span className="doc-check">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
+                  </span>
+                  <span>{document}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="mt-4 flex items-start gap-2 text-micro leading-relaxed text-muted">
+            <CircleHelp className="mt-0.5 h-3.5 w-3.5 flex-none" />
+            Exact requirements may vary. We confirm them before work begins.
+          </p>
+
+          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-lg mt-5 w-full">
+            <MessageCircle className="h-[18px] w-[18px]" />
+            Send prepared request
+          </a>
+        </div>
+      </div>
+
+      <p className="note-strip">
+        <Clock3 className="mt-0.5 h-4 w-4 flex-none" />
+        No form submission happens on this website. Start by confirming the requirement with us.
+      </p>
     </div>
-    <div className="request-footnote"><Clock3 className="h-4 w-4" /> No form submission happens on this website. Start by confirming the requirement with us.</div>
-  </div>;
+  );
 }

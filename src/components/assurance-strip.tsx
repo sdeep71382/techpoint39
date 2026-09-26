@@ -1,5 +1,36 @@
 import { assurances } from "@/components/site-data";
 
 export default function AssuranceStrip() {
-  return <section className="border-y border-slate-200 bg-white"><div className="mx-auto grid max-w-[1320px] divide-y divide-slate-200 px-4 sm:px-6 md:grid-cols-3 md:divide-x md:divide-y-0 lg:px-8">{assurances.map((item) => { const Icon = item.icon; return <div key={item.title} className="flex gap-4 py-7 md:px-6 first:pl-0 last:pr-0"><Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#0857d6]" /><div><h2 className="text-sm font-black text-[#071f4f]">{item.title}</h2><p className="mt-1 text-sm leading-6 text-slate-500">{item.text}</p></div></div>; })}</div></section>;
+  return (
+    <section className="border-y border-line bg-paper">
+      {/*
+        These were <h2> elements, so three small labels sat in the document
+        outline at the same level as the real section headings. A list is what
+        this actually is.
+      */}
+      <ul className="shell grid gap-y-2 py-2 md:grid-cols-3 md:gap-y-0">
+        {assurances.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <li
+              key={item.title}
+              className={
+                "flex gap-3 py-5 md:px-6 " +
+                (index > 0 ? "md:border-l md:border-line" : "") +
+                (index === 0 ? "md:pl-0" : "")
+              }
+            >
+              <span className="icon-tile icon-tile-blue h-9 w-9 rounded-lg">
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <div>
+                <p className="text-small font-semibold text-navy">{item.title}</p>
+                <p className="mt-1 text-small leading-relaxed text-muted">{item.text}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
 }

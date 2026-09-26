@@ -2,8 +2,88 @@ import { Phone, Search } from "lucide-react";
 import RequestBuilder from "@/components/request-builder";
 import type { Service } from "@/components/site-data";
 
-type HeroSectionProps = { activeService: Service; services: Service[]; checkedDocuments: string[]; readyPercent: number; whatsappUrl: string; onServiceChange: (serviceId: string) => void; onToggleDocument: (document: string) => void; };
+type HeroSectionProps = {
+  activeService: Service;
+  services: Service[];
+  checkedDocuments: string[];
+  readyPercent: number;
+  whatsappUrl: string;
+  onServiceChange: (serviceId: string) => void;
+  onToggleDocument: (document: string) => void;
+};
 
-export default function HeroSection({ activeService, services, checkedDocuments, readyPercent, whatsappUrl, onServiceChange, onToggleDocument }: HeroSectionProps) {
-  return <section id="top" className="hero-surface scroll-mt-24 pt-[72px]"><div className="mx-auto grid max-w-[1320px] items-center gap-12 px-4 py-14 sm:px-6 lg:min-h-[720px] lg:grid-cols-[0.88fr_1.12fr] lg:px-8 lg:py-16"><div className="relative z-10"><div className="eyebrow"><span className="h-2 w-2 bg-[#ffd21f]" /> Tech Point Services</div><h1 className="mt-6 max-w-2xl text-balance text-[clamp(2.75rem,5vw,4.9rem)] font-black leading-[1.02] text-[#071f4f]">Government service assistance, <span className="text-[#0857d6]">minus the guesswork.</span></h1><p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">Choose a service, check what to prepare, and reach a real person with a request that is already clear.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><a href="#services" className="primary-button h-[52px] justify-center px-6">Find your service <Search className="h-[18px] w-[18px]" /></a><a href="tel:+919780332509" className="secondary-button h-[52px] justify-center px-6"><Phone className="h-[18px] w-[18px]" /> Talk to support</a></div><div className="mt-10 grid max-w-xl grid-cols-3 border-y border-slate-200 py-5"><div className="pr-4"><p className="text-sm font-black text-[#071f4f]">Clear</p><p className="mt-1 text-xs leading-5 text-slate-500">Know the next step</p></div><div className="border-x border-slate-200 px-4"><p className="text-sm font-black text-[#071f4f]">Prepared</p><p className="mt-1 text-xs leading-5 text-slate-500">Check documents first</p></div><div className="pl-4"><p className="text-sm font-black text-[#071f4f]">Supported</p><p className="mt-1 text-xs leading-5 text-slate-500">Ask before starting</p></div></div></div><RequestBuilder service={activeService} services={services} checkedDocuments={checkedDocuments} readyPercent={readyPercent} whatsappUrl={whatsappUrl} onServiceChange={onServiceChange} onToggleDocument={onToggleDocument} /></div></section>;
+const pillars = [
+  { title: "Clear", text: "Know the next step" },
+  { title: "Prepared", text: "Check documents first" },
+  { title: "Supported", text: "Ask before starting" },
+];
+
+export default function HeroSection({
+  activeService,
+  services,
+  checkedDocuments,
+  readyPercent,
+  whatsappUrl,
+  onServiceChange,
+  onToggleDocument,
+}: HeroSectionProps) {
+  return (
+    <section id="top" className="hero scroll-mt-[68px] pt-[68px]">
+      <div className="shell grid items-center gap-10 py-12 sm:py-14 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14 lg:py-20">
+        <div className="relative z-10">
+          <p className="eyebrow">
+            <span className="eyebrow-dot" />
+            Tech Point Services
+          </p>
+
+          {/*
+            One size rule now. Previously the H1 carried a Tailwind clamp plus two
+            `!important` CSS declarations, so the largest of the three always won
+            no matter what was edited.
+          */}
+          <h1 className="mt-6 max-w-[15ch] text-h1 font-bold text-navy">
+            Government service assistance, <span className="text-royal">minus the guesswork.</span>
+          </h1>
+
+          <p className="mt-6 max-w-[46ch] text-lead text-pretty text-muted">
+            Choose a service, check what to prepare, and reach a real person with a request that is
+            already clear.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href="#services" className="btn btn-primary btn-lg">
+              <Search className="h-[18px] w-[18px]" />
+              Find your service
+            </a>
+            <a href="tel:+919780332509" className="btn btn-secondary btn-lg">
+              <Phone className="h-[18px] w-[18px]" />
+              Talk to support
+            </a>
+          </div>
+
+          <dl className="mt-10 grid max-w-lg grid-cols-3 border-y border-line py-5">
+            {pillars.map((pillar, index) => (
+              <div
+                key={pillar.title}
+                className={index === 1 ? "border-x border-line px-4" : index === 2 ? "pl-4" : "pr-4"}
+              >
+                <dt className="text-small font-bold text-navy">{pillar.title}</dt>
+                <dd className="mt-1 text-micro leading-snug text-muted">{pillar.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <RequestBuilder
+          service={activeService}
+          services={services}
+          checkedDocuments={checkedDocuments}
+          readyPercent={readyPercent}
+          whatsappUrl={whatsappUrl}
+          onServiceChange={onServiceChange}
+          onToggleDocument={onToggleDocument}
+        />
+      </div>
+    </section>
+  );
 }
