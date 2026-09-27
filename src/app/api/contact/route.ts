@@ -73,10 +73,20 @@ export async function POST(request: NextRequest) {
 
   /*
    * The honeypot is answered before anything else, including the config
-   * check. A bot that fills it always gets a quiet 200, so it never learns
-   * whether the form is working or who the sender is.
+   * check. A bot that fills it gets a reply identical to a success, so it
+   * never learns whether the form is working or who the sender is.
+   *
+   * The warning is the part that matters to the site owner. This field has
+   * been filled by browser autofill and by password managers in the wild,
+   * which silently discards real enquiries behind a success message. If
+   * enquiries are going missing, this line names the people affected.
    */
   if (isNonEmpty(payload.website)) {
+    console.warn("Contact submission DISCARDED by honeypot", {
+      email: typeof payload.email === "string" ? payload.email.slice(0, 120) : null,
+      service: typeof payload.service === "string" ? payload.service.slice(0, 80) : null,
+      honeypotValue: String(payload.website).slice(0, 60),
+    });
     return NextResponse.json({ ok: true });
   }
 
