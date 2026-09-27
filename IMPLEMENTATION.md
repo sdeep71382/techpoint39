@@ -223,24 +223,26 @@ Run `npm run check:email` after editing. It validates the key, lists verified se
 
 WhatsApp links are generated from the currently selected service and checklist state.
 
-### Verified sender and inbox placement
+### Verified sender
 
-`FROM_EMAIL` must be a sender verified in Resend, and the domain to verify is one the site already owns: `techpointservices.in`.
+`techpointservices.in` is verified in Resend, so `FROM_EMAIL` sends from the site's own domain and `CONTACT_EMAIL` is free to be any readable address.
 
-Until that is done the only usable sender is `onboarding@resend.dev`, which is Resend's shared free-tier domain. It has two consequences:
+This matters because the fallback, `onboarding@resend.dev`, is Resend's shared free-tier domain and carries two restrictions that are easy to misread as a broken form:
 
-- **It only delivers to the inbox that owns the API key.** Pointing `CONTACT_EMAIL` at any other address stops all mail, with no error on the form.
-- **Gmail treats it as an unverified bulk sender.** Messages are normally accepted, so Resend reports `last_event: "delivered"`, but they land in Spam or a filtered tab instead of the Primary inbox. The visitor sees the success message and the enquiry goes quiet. This is the single most likely reason for a "form works but no mail arrives" report.
+- **It only delivers to the inbox that owns the API key.** Repointing `CONTACT_EMAIL` to any other address is rejected with a `403` before the message is even built. The form then reports `send_failed` and no mail goes anywhere.
+- **Gmail treats it as an unverified bulk sender.** Messages are accepted, so Resend reports `last_event: "delivered"`, but they land in Spam rather than the Primary inbox. The visitor sees the success message and the enquiry goes quiet.
 
-Verifying `techpointservices.in` fixes both. Add the domain at https://resend.com/domains, publish the SPF and DKIM records it returns at the DNS host, wait for the status to read `verified`, then set `FROM_EMAIL=Tech Point Services <hello@techpointservices.in>` and redeploy on Vercel. Note that Vercel only applies environment variable changes to a new deployment.
-
-Because Gmail-side filtering is invisible to the sender, every accepted send logs its Resend id to the Vercel runtime logs:
+Both disappear with a verified sender. Because Gmail-side filtering is invisible to the sender, every accepted send logs its Resend id to the runtime logs:
 
 ```
-Contact email accepted { id: '01a0df03-...', service: 'Passport', replyTo: '...' }
+Contact email accepted {
+  id: '01a0e16f-...', service: 'Passport', replyTo: '...',
+  from: 'Tech Point Services <hello@techpointservices.in>',
+  to: 'techpointservices39@gmail.com'
+}
 ```
 
-That id is the join key to the Resend dashboard, so an enquiry that went quiet can still be traced after the fact.
+That id is the join key to the Resend dashboard, so an enquiry that went quiet can still be traced after the fact. Note that Vercel only applies environment variable changes to a new deployment.
 
 ## Open Items
 
@@ -248,7 +250,7 @@ Decisions taken during the redesign that are still worth a second opinion:
 
 - **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). Confirmed during Phase 2, when the hero grid was retuned against a 1280px measure. The old width put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
 - **Hero headline size** — the `h1` clamp cap sits at 3.75rem (60px) so the hero fits one screen. Restoring the larger 4.15rem cap would need a shorter headline string, since the column width is what forces the line count, not the font size.
-- **Verified sender** - `FROM_EMAIL` is still `onboarding@resend.dev`. Mail is being sent and accepted by Gmail, but it is landing in Spam rather than the Primary inbox, so enquiries are going unnoticed. Verifying `techpointservices.in` resolves this; see Contact Configuration above. Until then, check Spam rather than concluding the form is broken.
+- **Verified sender** - resolved. `techpointservices.in` is verified in Resend and `FROM_EMAIL` sends from `hello@techpointservices.in`, so mail reaches the Primary inbox and `CONTACT_EMAIL` is unrestricted. See Contact Configuration above.
 
 ## Disclaimer
 
