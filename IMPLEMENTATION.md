@@ -244,6 +244,18 @@ Contact email accepted {
 
 That id is the join key to the Resend dashboard, so an enquiry that went quiet can still be traced after the fact. Note that Vercel only applies environment variable changes to a new deployment.
 
+### Spam handling
+
+There is no honeypot field and no "submitted too fast to be human" check, and that is deliberate.
+
+Both were in place, and both discarded real enquiries while returning `{ ok: true }`, so the visitor saw "message sent" and nothing arrived. The honeypot caught submissions because browser autofill and password managers fill hidden inputs; no combination of `autocomplete` and `data-*-ignore` attributes makes a decoy field safe, since the failure mode of each one is only discovered in production. A timing floor has the same defect, because a visitor on autofill can complete five fields and submit in under two seconds.
+
+The rule the route now follows is that **no path returns success without a confirmed send**. Every rejection is a visible error: `400` for a malformed or incomplete submission, `429` for the rate limit, `503` when Resend is unconfigured, `502` when the send fails. If a send cannot happen, the visitor is told.
+
+What remains is a per-address limit of 8 submissions per 10 minutes, in memory, so per instance. It is charged only after a submission is known to be well formed, so mistyping a field cannot lock anyone out, and it returns `429` with a translated message while leaving the visitor's typed values in place so they can retry.
+
+This is a reasonable trade for this endpoint. It always sends to `CONTACT_EMAIL`, so it cannot be used as a spam relay or to send mail as the site to other people; the worst an attacker gets is junk in one inbox, bounded further by the rate limit and by Resend's daily quota. Adding a CAPTCHA would be the next step if junk becomes a real problem, at the cost of friction on every genuine enquiry.
+
 ## Open Items
 
 Decisions taken during the redesign that are still worth a second opinion:
@@ -251,6 +263,7 @@ Decisions taken during the redesign that are still worth a second opinion:
 - **Content width** was reduced from 1440px to 1280px (`maxWidth.shell` in `tailwind.config.ts`). Confirmed during Phase 2, when the hero grid was retuned against a 1280px measure. The old width put the hero heading and the request builder very far apart on a wide monitor. Revert the one value to put it back.
 - **Hero headline size** — the `h1` clamp cap sits at 3.75rem (60px) so the hero fits one screen. Restoring the larger 4.15rem cap would need a shorter headline string, since the column width is what forces the line count, not the font size.
 - **Verified sender** - resolved. `techpointservices.in` is verified in Resend and `FROM_EMAIL` sends from `hello@techpointservices.in`, so mail reaches the Primary inbox and `CONTACT_EMAIL` is unrestricted. See Contact Configuration above.
+- **Honeypot removed** - the form's spam trap was discarding genuine enquiries, in browsers with autofill or a password manager, behind a success message. It has been replaced by a per-address rate limit. See Spam handling above.
 
 ## Disclaimer
 
