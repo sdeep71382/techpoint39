@@ -37,8 +37,38 @@ type ContactPayload = {
   phone?: string;
   service?: string;
   message?: string;
-  website?: string;
 };
+
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_MAX = 8;
+
+/*
+ * Per-address sliding window, held in memory. This is a guard against a
+ * script hammering the endpoint, not a quota system: it is per server
+ * instance, so it is a speed bump rather than a hard limit, and a shared
+ * office address comfortably stays under the ceiling. It is charged only
+ * after a submission is known to be well formed, so it caps real mail
+ * rather than penalising typos.
+ */
+const recentSubmissions = new Map<string, number[]>();
+
+function clientKey(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip");
+  return ip && ip.length > 0 ? ip : "unknown";
+}
+
+function isRateLimited(client: string): boolean {
+  const now = Date.now();
+  const kept = (recentSubmissions.get(client) ?? []).filter((at) => now - at < RATE_WINDOW_MS);
+  recentSubmissions.set(client, kept);
+  if (recentSubmissions.size > 5000) recentSubmissions.clear();
+  return kept.length >= RATE_MAX;
+}
+
+function noteSubmission(client: string): void {
+  recentSubmissions.set(client, [...(recentSubmissions.get(client) ?? []), Date.now()]);
+}
 
 /*
  * A machine-readable code travels with every error so the three language
@@ -72,24 +102,30 @@ export async function POST(request: NextRequest) {
   }
 
   /*
-   * The honeypot is answered before anything else, including the config
-   * check. A bot that fills it gets a reply identical to a success, so it
-   * never learns whether the form is working or who the sender is.
+   * There is deliberately no honeypot and no "submitted too fast to be human"
+   * trap here. Both were tried and both had the same defect: they answered
+   * { ok: true } without sending, so any real enquiry they caught was lost
+   * while the visitor was told it had been delivered. The honeypot caught
+   * them because password managers fill hidden fields; a timing floor catches
+   * them because a visitor on autofill can fill five fields and hit send in
+   * well under two seconds. A defence whose failure mode is a silently
+   * discarded lead is worse than no defence, because it also hides itself.
    *
-   * The warning is the part that matters to the site owner. This field has
-   * been filled by browser autofill and by password managers in the wild,
-   * which silently discards real enquiries behind a success message. If
-   * enquiries are going missing, this line names the people affected.
+   * The endpoint cannot be turned into a spam relay: it always sends to
+   * CONTACT_EMAIL, so the worst an attacker achieves is junk in one inbox.
+   * That is bounded by the per-address limit below and by Resend's own daily
+   * quota, which is a fair price for never losing a real enquiry. Every
+   * remaining rejection returns a visible error the visitor can read.
    */
-  if (isNonEmpty(payload.website)) {
-    console.warn("Contact submission DISCARDED by honeypot", {
-      email: typeof payload.email === "string" ? payload.email.slice(0, 120) : null,
-      service: typeof payload.service === "string" ? payload.service.slice(0, 80) : null,
-      honeypotValue: String(payload.website).slice(0, 60),
-    });
-    return NextResponse.json({ ok: true });
+  const client = clientKey(request);
+  if (isRateLimited(client)) {
+    console.warn("Contact submission refused: rate limit", { client });
+    return fail(
+      "rate_limited",
+      "Too many messages from this connection. Please try again shortly.",
+      429,
+    );
   }
-
   const resendKey = resolveApiKey();
   const fromEmail = resolveFromEmail();
   const toEmail = process.env.CONTACT_EMAIL?.trim() || defaultContactEmail;
@@ -121,6 +157,14 @@ export async function POST(request: NextRequest) {
   if (name.length > 120 || email.length > 320 || phone.length > 40 || service.length > 160 || message.length > 3000) {
     return fail("too_long", "Please shorten one or more fields and try again.", 400);
   }
+
+  /*
+   * Counted here, once the submission is known to be well formed, so the
+   * window bounds real mail rather than typos. Charged before the send
+   * rather than after it, so a burst that fails at Resend still costs the
+   * sender its budget and cannot retry into the quota.
+   */
+  noteSubmission(client);
 
   const resend = new Resend(resendKey);
   const { data, error } = await resend.emails.send({

@@ -31,6 +31,7 @@ export default function SiteFooter({ locale }: { locale: Locale }) {
                 width={46}
                 height={33}
                 sizes="46px"
+                className="brand-logo-46"
                 loading="lazy"
               />
             </span>

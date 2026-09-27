@@ -158,6 +158,7 @@ export default function SiteHeader({ locale }: { locale: Locale }) {
               height={37}
               priority
               sizes="52px"
+              className="brand-logo-52"
             />
           </span>
           {/* The wordmark is a brand asset, so it stays in Latin script everywhere. */}

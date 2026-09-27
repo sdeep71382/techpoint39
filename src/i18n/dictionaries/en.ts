@@ -178,6 +178,7 @@ export const en = {
       email: "Please enter a valid email address.",
       tooLong: "One of the fields is too long. Please shorten it and try again.",
       notConfigured: "Messaging is temporarily unavailable. Please call or WhatsApp us instead.",
+      rateLimited: "You have sent several messages in a short time. Please try again in a few minutes, or call or WhatsApp us.",
       invalid: "Something went wrong. Please try again.",
     },
   },

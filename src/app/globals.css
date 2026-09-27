@@ -109,6 +109,28 @@
 @layer components {
   /* ---------- Layout ---------- */
 
+  /*
+   * The logo PNGs are generated at their exact render size, so the width and
+   * height passed to <Image> are the true pixel size. That still was not
+   * enough: Tailwind's preflight sets `height: auto` on images, which makes
+   * the browser derive the height from the intrinsic ratio of whatever the
+   * image optimiser served. The optimiser rounds the scaled height to whole
+   * pixels, so the ratio drifts (52x37 becomes 96x68) and the header mark
+   * rendered a pixel short and very slightly stretched. Pinning both axes
+   * keeps the aspect exact and clears the Next.js
+   * "width or height modified" console warning. Keep these in step with the
+   * sizes emitted by the logo generator.
+   */
+  .brand-logo-52 {
+    width: 52px;
+    height: 37px;
+  }
+
+  .brand-logo-46 {
+    width: 46px;
+    height: 33px;
+  }
+
   .shell {
     margin-inline: auto;
     width: 100%;
@@ -407,15 +429,6 @@
   }
 
   /* Off-screen bot trap. Kept out of the accessibility tree and the tab order. */
-  .contact-honeypot {
-    position: absolute;
-    left: -10000px;
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-
   .select-wrap {
     position: relative;
   }

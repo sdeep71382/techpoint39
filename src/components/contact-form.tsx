@@ -36,6 +36,7 @@ const errorKey: Record<string, keyof Dictionary["contact"]["errors"]> = {
   invalid_email: "email",
   too_long: "tooLong",
   not_configured: "notConfigured",
+  rate_limited: "rateLimited",
   invalid_body: "invalid",
   send_failed: "invalid",
 };
@@ -52,7 +53,16 @@ export default function ContactForm({ locale }: ContactFormProps) {
     setFeedback("");
 
     const form = event.currentTarget;
-    const payload = Object.fromEntries(new FormData(form).entries());
+    /*
+     * Every named control is sent, and nothing else. There is no hidden
+     * decoy field: a honeypot here gets filled by password managers, and the
+     * server then discards the submission as spam while reporting success,
+     * which is how genuine enquiries went missing.
+     */
+    const entries = Array.from(new FormData(form).entries()).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    );
+    const payload = Object.fromEntries(entries);
 
     try {
       const response = await fetch("/api/contact", {
@@ -91,29 +101,6 @@ export default function ContactForm({ locale }: ContactFormProps) {
       className="mt-6 grid gap-4"
       aria-busy={isSending}
     >
-      {/*
-        Honeypot. The data-* attributes are load-bearing: browser autofill and
-        password managers fill off-screen inputs that only carry
-        autoComplete="off", and a filled honeypot is discarded server side as
-        spam. The visitor then sees "message sent" for a message that was
-        never sent, which is how genuine enquiries were going missing.
-        autoComplete="new-password" is the one signal every browser and every
-        major password manager actually honours.
-      */}
-      <div className="contact-honeypot" aria-hidden="true">
-        <label htmlFor="website">Website</label>
-        <input
-          id="website"
-          name="website"
-          tabIndex={-1}
-          autoComplete="new-password"
-          data-1p-ignore="true"
-          data-lpignore="true"
-          data-bwignore="true"
-          data-form-type="other"
-        />
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5">
           <span className="field-label">
